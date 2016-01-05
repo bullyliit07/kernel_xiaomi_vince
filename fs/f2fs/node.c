@@ -1182,7 +1182,29 @@ void f2fs_ra_node_page(struct f2fs_sb_info *sbi, nid_t nid)
 	f2fs_put_page(apage, err ? 1 : 0);
 }
 
-static struct page *__get_node_page(struct f2fs_sb_info *sbi, pgoff_t nid,
+/*
+ * readahead MAX_RA_NODE number of node pages.
+ */
+void ra_node_pages(struct page *parent, int start)
+{
+	struct f2fs_sb_info *sbi = F2FS_P_SB(parent);
+	struct blk_plug plug;
+	int i, end;
+	nid_t nid;
+
+	blk_start_plug(&plug);
+
+	/* Then, try readahead for siblings of the desired node */
+	end = start + MAX_RA_NODE;
+	end = min(end, NIDS_PER_BLOCK);
+	for (i = start; i < end; i++) {
+		nid = get_nid(parent, i, false);
+		ra_node_page(sbi, nid);
+	}
+	blk_finish_plug(&plug);
+}
+
+struct page *__get_node_page(struct f2fs_sb_info *sbi, pgoff_t nid,
 					struct page *parent, int start)
 {
 	struct page *page;
@@ -1190,70 +1212,11 @@ static struct page *__get_node_page(struct f2fs_sb_info *sbi, pgoff_t nid,
 
 	if (!nid)
 		return ERR_PTR(-ENOENT);
-	if (f2fs_check_nid_range(sbi, nid))
-		return ERR_PTR(-EINVAL);
+	f2fs_bug_on(sbi, check_nid_range(sbi, nid));
 repeat:
-	page = f2fs_grab_cache_page(NODE_MAPPING(sbi), nid, false);
+	page = grab_cache_page(NODE_MAPPING(sbi), nid);
 	if (!page)
 		return ERR_PTR(-ENOMEM);
-
-	err = read_node_page(page, 0);
-	if (err < 0) {
-		f2fs_put_page(page, 1);
-		return ERR_PTR(err);
-	} else if (err == LOCKED_PAGE) {
-		err = 0;
-		goto page_hit;
-	}
-
-	if (parent)
-		f2fs_ra_node_pages(parent, start + 1, MAX_RA_NODE);
-
-	lock_page(page);
-
-	if (unlikely(page->mapping != NODE_MAPPING(sbi))) {
-		f2fs_put_page(page, 1);
-		goto repeat;
-	}
-
-	if (unlikely(!PageUptodate(page))) {
-		err = -EIO;
-		goto out_err;
-	}
-
-	if (!f2fs_inode_chksum_verify(sbi, page)) {
-		err = -EBADMSG;
-		goto out_err;
-	}
-page_hit:
-	if(unlikely(nid != nid_of_node(page))) {
-		f2fs_msg(sbi->sb, KERN_WARNING, "inconsistent node block, "
-			"nid:%lu, node_footer[nid:%u,ino:%u,ofs:%u,cpver:%llu,blkaddr:%u]",
-			nid, nid_of_node(page), ino_of_node(page),
-			ofs_of_node(page), cpver_of_node(page),
-			next_blkaddr_of_node(page));
-		err = -EINVAL;
-out_err:
-		ClearPageUptodate(page);
-		f2fs_put_page(page, 1);
-		return ERR_PTR(err);
-	}
-	mark_page_accessed(page);
-	return page;
-}
-
-struct page *f2fs_get_node_page(struct f2fs_sb_info *sbi, pgoff_t nid)
-{
-	return __get_node_page(sbi, nid, NULL, 0);
-}
-
-struct page *f2fs_get_node_page_ra(struct page *parent, int start)
-{
-	struct f2fs_sb_info *sbi = F2FS_P_SB(parent);
-	nid_t nid = get_nid(parent, start, false);
-
-	return __get_node_page(sbi, nid, parent, start);
-}
 
 static void flush_inline_data(struct f2fs_sb_info *sbi, nid_t ino)
 {
@@ -1261,34 +1224,56 @@ static void flush_inline_data(struct f2fs_sb_info *sbi, nid_t ino)
 	struct page *page;
 	int ret;
 
-	/* should flush inline_data before evict_inode */
-	inode = ilookup(sbi->sb, ino);
-	if (!inode)
-		return;
+	if (parent)
+		ra_node_pages(parent, start + 1);
 
-	page = f2fs_pagecache_get_page(inode->i_mapping, 0,
-					FGP_LOCK|FGP_NOWAIT, 0);
-	if (!page)
-		goto iput_out;
+	lock_page(page);
 
-	if (!PageUptodate(page))
-		goto page_out;
+	if (unlikely(!PageUptodate(page))) {
+		f2fs_put_page(page, 1);
+		return ERR_PTR(-EIO);
+	}
+	if (unlikely(page->mapping != NODE_MAPPING(sbi))) {
+		f2fs_put_page(page, 1);
+		goto repeat;
+	}
+page_hit:
+	if (unlikely(!PageUptodate(page))) {
+		f2fs_put_page(page, 1);
+		return ERR_PTR(-EIO);
+	}
+	mark_page_accessed(page);
+	f2fs_bug_on(sbi, nid != nid_of_node(page));
+	return page;
+}
 
-	if (!PageDirty(page))
-		goto page_out;
+struct page *get_node_page(struct f2fs_sb_info *sbi, pgoff_t nid)
+{
+	return __get_node_page(sbi, nid, NULL, 0);
+}
 
-	if (!clear_page_dirty_for_io(page))
-		goto page_out;
+struct page *get_node_page_ra(struct page *parent, int start)
+{
+	struct f2fs_sb_info *sbi = F2FS_P_SB(parent);
+	nid_t nid = get_nid(parent, start, false);
 
-	ret = f2fs_write_inline_data(inode, page);
-	inode_dec_dirty_pages(inode);
-	f2fs_remove_dirty_inode(inode);
-	if (ret)
-		set_page_dirty(page);
-page_out:
-	f2fs_put_page(page, 1);
-iput_out:
-	iput(inode);
+	return __get_node_page(sbi, nid, parent, start);
+}
+
+void sync_inode_page(struct dnode_of_data *dn)
+{
+	if (IS_INODE(dn->node_page) || dn->inode_page == dn->node_page) {
+		update_inode(dn->inode, dn->node_page);
+	} else if (dn->inode_page) {
+		if (!dn->inode_page_locked)
+			lock_page(dn->inode_page);
+		update_inode(dn->inode, dn->inode_page);
+		if (!dn->inode_page_locked)
+			unlock_page(dn->inode_page);
+	} else {
+		update_inode_page(dn->inode);
+	}
+	dn->node_changed = true;
 }
 
 static struct page *last_fsync_dnode(struct f2fs_sb_info *sbi, nid_t ino)
