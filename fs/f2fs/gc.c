@@ -295,6 +295,13 @@ static int fb_notifier_callback(struct notifier_block *self,
 		case FB_BLANK_UNBLANK:
 			screen_on = true;
 			queue_work(system_power_efficient_wq, &f2fs_gc_fb_worker);
+			/*
+			 * Start all GC threads exclusively from here
+			 * since the phone screen would turn on when
+			 * a charger is connected
+			 */
+			if (TRIGGER_SOFF)
+				start_all_gc_threads();
 			break;
 		}
 	}
