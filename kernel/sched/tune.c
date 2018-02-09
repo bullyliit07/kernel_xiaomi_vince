@@ -24,9 +24,47 @@ extern struct reciprocal_value schedtune_spc_rdiv;
 struct target_nrg schedtune_target_nrg;
 
 #ifdef CONFIG_DYNAMIC_STUNE_BOOST
-static DEFINE_MUTEX(stune_boost_mutex);
-static struct schedtune *getSchedtune(char *st_name);
-static int dynamic_boost(struct schedtune *st, int boost);
+static struct schedtune *getSchedtune(char *st_name)
+{
+	int idx;
+ 	for (idx = 1; idx < BOOSTGROUPS_COUNT; ++idx) {
+		char name_buf[NAME_MAX + 1];
+		struct schedtune *st = allocated_group[idx];
+ 		if (!st) {
+			pr_warn("SCHEDTUNE: Could not find %s\n", st_name);
+			break;
+		}
+ 		cgroup_name(st->css.cgroup, name_buf, sizeof(name_buf));
+		if (strncmp(name_buf, st_name, strlen(st_name)) == 0)
+			return st;
+	}
+ 	return NULL;
+}
+
+int do_stune_boost(char *st_name, int boost)
+{
+	int ret = 0;
+	struct schedtune *st = getSchedtune(st_name);
+ 	if (!st)
+		return -EINVAL;
+ 	mutex_lock(&stune_boost_mutex);
+ 	/* Boost if new value is greater than current */
+	if (boost > st->boost)
+		ret = dynamic_boost_write(st, boost);
+ 	mutex_unlock(&stune_boost_mutex);
+ 	return ret;
+}
+ int reset_stune_boost(char *st_name)
+{
+	int ret = 0;
+	struct schedtune *st = getSchedtune(st_name);
+ 	if (!st)
+		return -EINVAL;
+ 	mutex_lock(&stune_boost_mutex);
+	ret = dynamic_boost_write(st, st->boost_default);
+	mutex_unlock(&stune_boost_mutex);
+ 	return ret;
+}
 #endif /* CONFIG_DYNAMIC_STUNE_BOOST */
 
 /* Performance Boost region (B) threshold params */
@@ -204,9 +242,6 @@ struct schedtune {
 	 * the value when Dynamic SchedTune Boost is reset.
 	 */
 	int boost_default;
-
-	/* Dynamic boost value for tasks on that SchedTune CGroup */
-	int dynamic_boost;
 #endif /* CONFIG_DYNAMIC_STUNE_BOOST */
 };
 
@@ -242,7 +277,6 @@ root_schedtune = {
 	.prefer_idle = 0,
 #ifdef CONFIG_DYNAMIC_STUNE_BOOST
 	.boost_default = 0,
-	.dynamic_boost = 0,
 #endif /* CONFIG_DYNAMIC_STUNE_BOOST */
 };
 
@@ -955,7 +989,7 @@ static struct schedtune *getSchedtune(char *st_name)
 	return NULL;
 }
 
-static int dynamic_boost(struct schedtune *st, int boost)
+static int dynamic_boost_write(struct schedtune *st, int boost)
 {
 	int ret;
 	/* Backup boost_default */
@@ -969,9 +1003,10 @@ static int dynamic_boost(struct schedtune *st, int boost)
 	return ret;
 }
 
-static int _do_stune_boost(struct schedtune *st, int boost)
+int do_stune_boost(char *st_name, int boost)
 {
 	int ret = 0;
+	struct schedtune *st = getSchedtune(st_name);
 
 	if (!st)
 		return -EINVAL;
@@ -980,7 +1015,7 @@ static int _do_stune_boost(struct schedtune *st, int boost)
 
 	/* Boost if new value is greater than current */
 	if (boost > st->boost)
-		ret = dynamic_boost(st, boost);
+		ret = dynamic_boost_write(st, boost);
 
 	mutex_unlock(&stune_boost_mutex);
 
@@ -996,19 +1031,11 @@ int reset_stune_boost(char *st_name)
 		return -EINVAL;
 
 	mutex_lock(&stune_boost_mutex);
-	ret = dynamic_boost(st, st->boost_default);
+	ret = dynamic_boost_write(st, st->boost_default);
 	mutex_unlock(&stune_boost_mutex);
 
 	return ret;
 }
-
-int do_stune_boost(char *st_name, int boost)
-{
-	struct schedtune *st = getSchedtune(st_name);
-
-	return _do_stune_boost(st, boost);
-}
-
 #endif /* CONFIG_DYNAMIC_STUNE_BOOST */
 
 #else /* CONFIG_CGROUP_SCHEDTUNE */
