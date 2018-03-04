@@ -1660,13 +1660,19 @@ tANI_U8 *pBody;
     if (0 == frmAddBARsp.AddBAParameterSet.bufferSize)
         frmAddBARsp.AddBAParameterSet.bufferSize = val;
     else
+<<<<<<< HEAD
     {
+=======
+>>>>>>> 0610021... drivers: staging: Import prima WLAN driver
         frmAddBARsp.AddBAParameterSet.bufferSize =
                     VOS_MIN(val, frmAddBARsp.AddBAParameterSet.bufferSize);
         limLog( pMac, LOG1,
             FL( "ADDBA RSP  Buffsize = %d" ),
             frmAddBARsp.AddBAParameterSet.bufferSize);
+<<<<<<< HEAD
     }
+=======
+>>>>>>> 0610021... drivers: staging: Import prima WLAN driver
     // Now, validate the ADDBA Rsp
     if( eSIR_MAC_SUCCESS_STATUS !=
         __limValidateAddBAParameterSet( pMac, pSta,

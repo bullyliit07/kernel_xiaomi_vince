@@ -4100,11 +4100,17 @@ tSirRetStatus limStaSendAddBssPreAssoc( tpAniSirGlobal pMac, tANI_U8 updateEntry
                             pBeaconStruct );
 
     if(pMac->lim.gLimProtectionControl != WNI_CFG_FORCE_POLICY_PROTECTION_DISABLE)
+<<<<<<< HEAD
     {
         limDecideStaProtectionOnAssoc(pMac, pBeaconStruct, psessionEntry);
         vos_mem_copy(pAddBssParams->bssId, bssDescription->bssId,
                      sizeof(tSirMacAddr));
     }
+=======
+        limDecideStaProtectionOnAssoc(pMac, pBeaconStruct, psessionEntry);
+        vos_mem_copy(pAddBssParams->bssId, bssDescription->bssId,
+                     sizeof(tSirMacAddr));
+>>>>>>> 0610021... drivers: staging: Import prima WLAN driver
 
     // Fill in tAddBssParams selfMacAddr
     vos_mem_copy(pAddBssParams->selfMacAddr,

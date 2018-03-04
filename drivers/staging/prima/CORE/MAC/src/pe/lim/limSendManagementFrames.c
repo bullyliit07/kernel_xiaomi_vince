@@ -6129,6 +6129,7 @@ tSirRetStatus limSendAddBARsp( tpAniSirGlobal pMac,
   else
     return eSIR_SUCCESS;
 
+<<<<<<< HEAD
   returnAfterError:
     // Release buffer, if allocated
     if( NULL != pAddBARspBuffer )
@@ -6138,6 +6139,17 @@ tSirRetStatus limSendAddBARsp( tpAniSirGlobal pMac,
           (void *) pPacket );
 
     return statusCode;
+=======
+    returnAfterError:
+      // Release buffer, if allocated
+      if( NULL != pAddBARspBuffer )
+        palPktFree( pMac->hHdd,
+            HAL_TXRX_FRM_802_11_MGMT,
+            (void *) pAddBARspBuffer,
+            (void *) pPacket );
+
+      return statusCode;
+>>>>>>> 0610021... drivers: staging: Import prima WLAN driver
 }
 
 /**
@@ -6333,6 +6345,7 @@ tSirRetStatus limSendDelBAInd( tpAniSirGlobal pMac,
   else
     return eSIR_SUCCESS;
 
+<<<<<<< HEAD
   returnAfterError:
     // Release buffer, if allocated
     if( NULL != pDelBAIndBuffer )
@@ -6342,6 +6355,18 @@ tSirRetStatus limSendDelBAInd( tpAniSirGlobal pMac,
           (void *) pPacket );
 
     return statusCode;
+=======
+    returnAfterError:
+
+      // Release buffer, if allocated
+      if( NULL != pDelBAIndBuffer )
+        palPktFree( pMac->hHdd,
+            HAL_TXRX_FRM_802_11_MGMT,
+            (void *) pDelBAIndBuffer,
+            (void *) pPacket );
+
+      return statusCode;
+>>>>>>> 0610021... drivers: staging: Import prima WLAN driver
 }
 
 #if defined WLAN_FEATURE_VOWIFI
