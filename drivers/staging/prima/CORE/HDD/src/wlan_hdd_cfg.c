@@ -4102,7 +4102,6 @@ typedef struct
    char *value;
 }tCfgIniEntry;
 
-
 /* convert string to 6 bytes mac address
  * 00AA00BB00CC -> 0x00 0xAA 0x00 0xBB 0x00 0xCC
  */
