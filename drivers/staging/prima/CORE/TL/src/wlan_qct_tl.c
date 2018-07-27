@@ -11866,13 +11866,8 @@ WLAN_TLAPGetNextTxIds
 
   ++ucNextSTA;
 
-<<<<<<< HEAD
-    if ( WLAN_MAX_STA_COUNT <= ucNextSTA )
-      ucNextSTA = 0;
-=======
   if ( WLAN_MAX_STA_COUNT <= ucNextSTA )
     ucNextSTA = 0;
->>>>>>> 0610021... drivers: staging: Import prima WLAN driver
 
     isServed = FALSE;
     if ( 0 == pTLCb->ucCurLeftWeight )

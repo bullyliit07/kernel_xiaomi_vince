@@ -3989,21 +3989,12 @@ tLimMlmRemoveKeyCnf  mlmRemoveKeyCnf;
   
 
 
-<<<<<<< HEAD
-  psessionEntry->limMlmState = eLIM_MLM_WT_REMOVE_STA_KEY_STATE;
-  MTRACE(macTrace(pMac, TRACE_CODE_MLM_STATE, psessionEntry->peSessionId, psessionEntry->limMlmState));
-
-  // Package WDA_REMOVE_STAKEY_REQ message parameters
-  limSendRemoveStaKeyReq( pMac,pMlmRemoveKeyReq,staIdx,psessionEntry);
-  return;
-=======
     psessionEntry->limMlmState = eLIM_MLM_WT_REMOVE_STA_KEY_STATE;
     MTRACE(macTrace(pMac, TRACE_CODE_MLM_STATE, psessionEntry->peSessionId, psessionEntry->limMlmState));
 
     // Package WDA_REMOVE_STAKEY_REQ message parameters
     limSendRemoveStaKeyReq( pMac,pMlmRemoveKeyReq,staIdx,psessionEntry);
     return;
->>>>>>> 0610021... drivers: staging: Import prima WLAN driver
  
 end:
     limPostSmeRemoveKeyCnf( pMac,

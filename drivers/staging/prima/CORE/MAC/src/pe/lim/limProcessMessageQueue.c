@@ -229,11 +229,7 @@ __limHandleBeacon(tpAniSirGlobal pMac, tpSirMsgQ pMsg, tpPESession psessionEntry
      else
         limProcessBeaconFrame(pMac, pRxPacketInfo, psessionEntry);
 
-<<<<<<< HEAD
-    return;
-=======
         return;
->>>>>>> 0610021... drivers: staging: Import prima WLAN driver
 }
 
 

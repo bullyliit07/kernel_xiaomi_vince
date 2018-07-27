@@ -705,11 +705,7 @@ halRoundS32(tANI_S32 p)
     else
         k = p;
 
-<<<<<<< HEAD
-    return(k);
-=======
         return(k);
->>>>>>> 0610021... drivers: staging: Import prima WLAN driver
 }
 
 // New functions for endianess conversion
