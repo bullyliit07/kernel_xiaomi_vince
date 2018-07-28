@@ -1155,7 +1155,6 @@ exit:
 	return spl_hs;
 }
 
-static void wcd_correct_swch_plug (struct work_struct *work)
 static void wcd_headset_btn_delay(struct work_struct *work)
 {
 	struct wcd_mbhc *mbhc =
@@ -1169,6 +1168,7 @@ static void wcd_headset_btn_delay(struct work_struct *work)
 	mbhc->ignore_btn_intr = false;
 }
 
+static void wcd_correct_swch_plug (struct work_struct *work)
 {
 	struct wcd_mbhc *mbhc;
 	struct snd_soc_codec *codec;
@@ -1261,18 +1261,9 @@ static void wcd_headset_btn_delay(struct work_struct *work)
 
 correct_plug_type:
 
-<<<<<<< HEAD
-	timeout = jiffies + msecs_to_jiffies (HS_DETECT_PLUG_TIME_MS);
-	while (!time_after (jiffies, timeout)) {
-=======
 	timeout = jiffies + msecs_to_jiffies(HS_DETECT_PLUG_TIME_MS);
 	while (!time_after(jiffies, timeout)) {
 		retry++;
-<<<<<<< HEAD
-#endif
->>>>>>> 54610e1... ASoC: wcd-mbhc: Improve detection speed and accuracy
-=======
->>>>>>> 180038c... ASoC: wcd-mbhc: Remove ifdefs around detection improvement code
 		if (mbhc->hs_detect_work_stop) {
 			pr_debug ("%s: stop requested: %d\n", __func__,
 					mbhc->hs_detect_work_stop);
@@ -1325,19 +1316,7 @@ correct_plug_type:
 		 * instead of hogging system by contineous polling, wait for
 		 * sometime and re-check stop request again.
 		 */
-<<<<<<< HEAD
-<<<<<<< HEAD
 		msleep (180);
-=======
-#ifdef CONFIG_MACH_MSM8998_DUMPLING
-		msleep(5 * retry);
-#else
-		msleep(180);
-#endif
->>>>>>> 54610e1... ASoC: wcd-mbhc: Improve detection speed and accuracy
-=======
-		msleep(5 * retry);
->>>>>>> 180038c... ASoC: wcd-mbhc: Remove ifdefs around detection improvement code
 		if (hs_comp_res && (spl_hs_count < WCD_MBHC_SPL_HS_CNT)) {
 			spl_hs = wcd_mbhc_check_for_spl_headset (mbhc,
 								&spl_hs_count);
@@ -1521,15 +1500,10 @@ exit:
 	if (mbhc->mbhc_cb->hph_pull_down_ctrl)
 		mbhc->mbhc_cb->hph_pull_down_ctrl (codec, true);
 
-<<<<<<< HEAD
-	mbhc->mbhc_cb->lock_sleep (mbhc, false);
-	pr_debug ("%s: leave\n", __func__);
-=======
 	mbhc->mbhc_cb->lock_sleep(mbhc, false);
 	schedule_delayed_work(&mbhc->mbhc_btn_delay_dwork,
 					msecs_to_jiffies(750));
 	pr_debug("%s: leave\n", __func__);
->>>>>>> 54610e1... ASoC: wcd-mbhc: Improve detection speed and accuracy
 }
 
 /* called under codec_resource_lock acquisition */
@@ -2557,17 +2531,9 @@ int wcd_mbhc_init (struct wcd_mbhc *mbhc, struct snd_soc_codec *codec,
 
 		INIT_DELAYED_WORK (&mbhc->mbhc_firmware_dwork,
 				  wcd_mbhc_fw_read);
-<<<<<<< HEAD
-		INIT_DELAYED_WORK (&mbhc->mbhc_btn_dwork, wcd_btn_lpress_fn);
-=======
 		INIT_DELAYED_WORK(&mbhc->mbhc_btn_dwork, wcd_btn_lpress_fn);
 		INIT_DELAYED_WORK(&mbhc->mbhc_btn_delay_dwork,
 						wcd_headset_btn_delay);
-<<<<<<< HEAD
-#endif
->>>>>>> 54610e1... ASoC: wcd-mbhc: Improve detection speed and accuracy
-=======
->>>>>>> 180038c... ASoC: wcd-mbhc: Remove ifdefs around detection improvement code
 	}
 	mutex_init (&mbhc->hphl_pa_lock);
 	mutex_init (&mbhc->hphr_pa_lock);
