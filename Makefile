@@ -300,7 +300,7 @@ HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-p
 HOSTCXXFLAGS = -O2
 
 ifeq ($(shell $(HOSTCC) -v 2>&1 | grep -c "clang version"), 1)
-HOSTCFLAGS  += -Wno-unused-value -Wno-unused-parameter \
+HOSTCFLAGS  += -Wno-unused-value -Wno-unused-parameter -Wno-incompatible-pointer-types -Wno-duplicate-decl-specifier -Wno-memset-transposed-args -Wno-misleading-indentation -Wno-shift-overflow -Wno-switch-unreachable -Wno-unused-variable \
 		-Wno-missing-field-initializers -fno-delete-null-pointer-checks
 endif
 
@@ -406,6 +406,13 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
+                   -Wno-incompatible-pointer-types \
+                   -Wno-duplicate-decl-specifier \
+                   -Wno-memset-transposed-args \
+                   -Wno-misleading-indentation \
+                   -Wno-shift-overflow \
+                   -Wno-switch-unreachable \
+                   -Wno-unused-variable \
 		   -std=gnu89
 
 KBUILD_AFLAGS_KERNEL :=
@@ -623,7 +630,7 @@ KBUILD_CFLAGS   += $(call cc-option,-fno-store-merging,)
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS	+= -Os $(call cc-disable-warning,maybe-uninitialized,)
 else
-KBUILD_CFLAGS	+= -O2 -finline-functions -Wno-maybe-uninitialized -Wno-nonnull
+KBUILD_CFLAGS	+= -O2 -finline-functions -Wno-maybe-uninitialized -Wno-nonnull -Wno-incompatible-pointer-types -Wno-duplicate-decl-specifier -Wno-memset-transposed-args -Wno-misleading-indentation -Wno-shift-overflow -Wno-switch-unreachable -Wno-unused-variable
 endif
 
 # Tell gcc to never replace conditional load with a non-conditional one
