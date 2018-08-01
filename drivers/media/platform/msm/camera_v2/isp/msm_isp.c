@@ -566,7 +566,6 @@ static int vfe_probe(struct platform_device *pdev)
 		if (rc < 0)
 			goto end;
 	}
-
 end:
 	return rc;
 }
