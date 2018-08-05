@@ -66,8 +66,9 @@ if [ "$choice" == "1" ]; then
   DATE=`date`
   echo -e "\n$cyan#######################################################################$nc"
   echo -e "$brown(i) Build started at $DATE$nc"
-  make O=/media/oveno/649AC4299AC3F6181/zucc/Output/build/out $CONFIG $THREAD &>/dev/null \
-						     
+  rm -f /media/oveno/649AC4299AC3F6181/zucc/Output/log/Changelog.txt
+  git log -n 100 > /media/oveno/649AC4299AC3F6181/zucc/Output/log/Changelog.txt
+  make O=/media/oveno/649AC4299AC3F6181/zucc/Output/build/out $CONFIG $THREAD &>/dev/null \						     
   make O=/media/oveno/649AC4299AC3F6181/zucc/Output/build/out $THREAD &>/media/oveno/649AC4299AC3F6181/zucc/Output/log/Buildlog.txt & pid=$! \
 
   spin[0]="$blue-"
@@ -122,6 +123,7 @@ if [ "$choice" == "4" ]; then
   echo -e "\n$cyan#######################################################################$nc"
   cd $ZIP_DIR
   make clean &>/dev/null
+  cp  /media/oveno/649AC4299AC3F6181/zucc/Output/log/Changelog.txt /media/oveno/649AC4299AC3F6181/zucc/Output/Zipper/Changelog.txt
   cp $KERN_IMG $ZIP_DIR/Image.gz-dtb
   make &>/dev/null
   make sign &>/dev/null
