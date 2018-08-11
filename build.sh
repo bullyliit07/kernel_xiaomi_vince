@@ -82,6 +82,7 @@ if [ "$choice" == "1" ]; then
   echo -e "\n$cyan#######################################################################$nc"
   echo -e "$brown(i) Build started at $DATE$nc"
   rm -rf $LOG_DIR
+  rm -rf $KERN_IMG
   mkdir $LOG_DIR
   git log -n 100 > $LOG_DIR/Changelog.txt
   make O=$OUT_DIR $CONFIG $THREAD &>/dev/null \						     
@@ -104,6 +105,8 @@ if [ "$choice" == "1" ]; then
   if ! [ -a $KERN_IMG ]; then
     echo -e "\n$red(!) Kernel compilation failed, See buildlog to fix errors $nc"
     echo -e "$red#######################################################################$nc"
+    #Cause i m lazy af and geenome iz goooooddd
+    gedit $LOG_DIR/Buildlog.txt
   fi
   $DTBTOOL -2 -o $KERNEL_DIR/arch/arm/boot/dt.img -s 2048 -p $KERNEL_DIR/scripts/dtc/ $KERNEL_DIR/arch/arm/boot/dts/ &>/dev/null &>/dev/null
 
@@ -118,7 +121,7 @@ fi
 if [ "$choice" == "2" ]; then
   echo -e "\n$cyan#######################################################################$nc"
   make O=$OUT_DIR  $CONFIG
-  cp $OUT_DIR/.config arch/arm64/configs/$CONFIG
+  cp $OUT_DIR/.config $CONFIG_DIR/$CONFIG
   echo -e "$purple(i) Defconfig generated.$nc"
   echo -e "$cyan#######################################################################$nc"
 fi
