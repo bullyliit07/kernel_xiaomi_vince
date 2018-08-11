@@ -22,8 +22,6 @@
 #include <linux/slab.h>
 #include <linux/input.h>
 #include <linux/time.h>
-#include <linux/kthread.h>
-#include <linux/sched/rt.h>
 
 struct cpu_sync {
 	int cpu;
@@ -49,6 +47,7 @@ module_param(dynamic_stune_boost, uint, 0644);
 
 static struct delayed_work input_boost_rem;
 static u64 last_input_time;
+#define MIN_INPUT_INTERVAL (150 * USEC_PER_MSEC)
 
 static int set_input_boost_freq(const char *buf, const struct kernel_param *kp)
 {
@@ -308,20 +307,12 @@ static struct input_handler cpuboost_input_handler = {
 
 static int cpu_boost_init(void)
 {
-	int cpu, ret, i;
+	int cpu, ret;
 	struct cpu_sync *s;
 
 	cpu_boost_wq = alloc_workqueue("cpuboost_wq", WQ_HIGHPRI, 0);
 	if (!cpu_boost_wq)
 		return -EFAULT;
-	}
-
-	ret = sched_setscheduler(cpu_boost_worker_thread, SCHED_FIFO, &param);
-	if (ret)
-		pr_err("cpu-boost: Failed to set SCHED_FIFO!\n");
-
-	/* Now bind it to the cpumask */
-	kthread_bind_mask(cpu_boost_worker_thread, &sys_bg_mask);
 
 	INIT_WORK(&input_boost_work, do_input_boost);
 	INIT_DELAYED_WORK(&input_boost_rem, do_input_boost_rem);
