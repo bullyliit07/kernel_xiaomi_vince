@@ -32,7 +32,9 @@ nc='\033[0m'
 KERNEL_DIR=$PWD
 TOOL_DIR=$KERNEL_DIR/../toolchains
 PRODUCT_DIR=$KERNEL_DIR/../Output
-KERN_IMG=$PRODUCT_DIR/build/out/arch/arm64/boot/Image.gz-dtb
+KERN_IMG=$PRODUCT_DIR/build/out/arch/arm64/boot/Image.gz
+DTB_T=$PRODUCT_DIR/build/out/arch/arm64/boot/dts/qcom/msm8953-qrd-sku3-e7.dtb
+DTB=$PRODUCT_DIR/build/out/arch/arm64/boot/dts/qcom/msm8953-qrd-sku3-e7-nt.dtb
 ZIP_DIR=$PRODUCT_DIR/Zipper
 CONFIG_DIR=$KERNEL_DIR/arch/arm64/configs
 LOG_DIR=$PRODUCT_DIR/log
@@ -142,7 +144,9 @@ if [ "$choice" == "4" ]; then
   cd $ZIP_DIR
   make clean &>/dev/null
   cp $LOG_DIR/Changelog.txt $ZIP_DIR/Changelog.txt
-  cp $KERN_IMG $ZIP_DIR/Image.gz-dtb
+  cp $KERN_IMG $ZIP_DIR/kernel/Image.gz
+  cp $DTB $ZIP_DIR/non-treble/
+  cp $DTB_T $ZIP_DIR/treble/
   make &>/dev/null
   make sign &>/dev/null
   cd $KERNEL_DIR
