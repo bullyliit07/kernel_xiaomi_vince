@@ -12,35 +12,6 @@ enum FP_MODE {
 	GF_DEBUG_MODE = 0x56
 };
 
-#define SUPPORT_NAV_EVENT
-#if defined(SUPPORT_NAV_EVENT)
-
-
-
-
-
-#define GF_NAV_INPUT_DOUBLE_CLICK	KEY_VOLUMEUP
-#define GF_NAV_INPUT_LONG_PRESS		KEY_SEARCH
-#define GF_NAV_INPUT_HEAVY		KEY_CHAT
-#endif
-
-
-#if defined(SUPPORT_NAV_EVENT)
-typedef enum gf_nav_event {
-	GF_NAV_NONE = 0,
-	GF_NAV_FINGER_UP,
-	GF_NAV_FINGER_DOWN,
-	GF_NAV_UP,
-	GF_NAV_DOWN,
-	GF_NAV_LEFT,
-	GF_NAV_RIGHT,
-	GF_NAV_CLICK,
-	GF_NAV_HEAVY,
-	GF_NAV_LONG_PRESS,
-	GF_NAV_DOUBLE_CLICK,
-} gf_nav_event_t;
-#endif
-
 typedef enum gf_key_event {
 	GF_KEY_NONE = 0,
 	GF_KEY_HOME,
@@ -93,14 +64,9 @@ struct gf_ioc_chip_info {
 #define GF_IOC_ENABLE_GPIO  	_IO(GF_IOC_MAGIC, 15)
 #define GF_IOC_RELEASE_GPIO  	_IO(GF_IOC_MAGIC, 16)
 
-#if defined(SUPPORT_NAV_EVENT)
-#define GF_IOC_NAV_EVENT	_IOW(GF_IOC_MAGIC, 14, gf_nav_event_t)
-#define  GF_IOC_MAXNR    15  /* THIS MACRO IS NOT USED NOW... */
-#else
 #define  GF_IOC_MAXNR    14  /* THIS MACRO IS NOT USED NOW... */
-#endif
 
-
+#define AP_CONTROL_CLK       1
 #define  USE_PLATFORM_BUS     1
 
 

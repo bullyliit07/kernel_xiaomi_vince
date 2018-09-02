@@ -55,6 +55,10 @@
 	};
 };
 
+&dsi_r69006_1080p_cmd {
+	qcom,esd-check-enabled;
+};
+
 &mdss_mdp {
 	qcom,mdss-pref-prim-intf = "dsi";
 };
@@ -107,6 +111,44 @@
 	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
 };
 /*add end for E7 display*/
+
+&dsi_nt35532_fhd_c6lite_vid {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+
+};
+
+&dsi_nt35596_fhd_vid {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+
+};
+
+&dsi_nt35596_tianma_fhd_c6lite_vid {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+
+};
+
+&dsi_otm1911_fhd_c6lite_vid {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+
+};
+
+&dsi_r63350_ebbg_fhd_c6lite_vid {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+
+};
+
+&dsi_ili9885_boe_fhd_c6lite_vid {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+
+};
+
+&dsi_r69006_1080p_cmd {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+};
+
+&dsi_r69006_1080p_video {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+};
 
 &int_codec {
 	status = "ok";

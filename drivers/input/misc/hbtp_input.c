@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2014-2016, The Linux Foundation. All rights reserved.
+ * Copyright (C) 2018 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -325,8 +326,8 @@ static struct attribute *secure_touch_attrs[] = {
 	&dev_attr_secure_touch_enable.attr,
 	&dev_attr_secure_touch.attr,
 	&dev_attr_secure_touch_userspace.attr,
-#endif
 	NULL
+#endif
 };
 
 static const struct attribute_group secure_touch_attr_group = {
@@ -1058,5 +1059,5 @@ static void __exit hbtp_exit(void)
 MODULE_DESCRIPTION("Kernel driver to support host based touch processing");
 MODULE_LICENSE("GPLv2");
 
-late_initcall(hbtp_init);
+module_init(hbtp_init);
 module_exit(hbtp_exit);

@@ -2,6 +2,7 @@
  * Driver for IMS Passenger Control Unit Devices
  *
  * Copyright (C) 2013 The IMS Company
+ * Copyright (C) 2018 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2
@@ -1635,25 +1636,13 @@ ims_pcu_get_cdc_union_desc(struct usb_interface *intf)
 		return NULL;
 	}
 
-	while (buflen >= sizeof(*union_desc)) {
+	while (buflen > 0) {
 		union_desc = (struct usb_cdc_union_desc *)buf;
-
-		if (union_desc->bLength > buflen) {
-			dev_err(&intf->dev, "Too large descriptor\n");
-			return NULL;
-		}
 
 		if (union_desc->bDescriptorType == USB_DT_CS_INTERFACE &&
 		    union_desc->bDescriptorSubType == USB_CDC_UNION_TYPE) {
 			dev_dbg(&intf->dev, "Found union header\n");
-
-			if (union_desc->bLength >= sizeof(*union_desc))
-				return union_desc;
-
-			dev_err(&intf->dev,
-				"Union descriptor to short (%d vs %zd\n)",
-				union_desc->bLength, sizeof(*union_desc));
-			return NULL;
+			return union_desc;
 		}
 
 		buflen -= union_desc->bLength;
@@ -1679,10 +1668,6 @@ static int ims_pcu_parse_cdc_data(struct usb_interface *intf, struct ims_pcu *pc
 		return -EINVAL;
 
 	alt = pcu->ctrl_intf->cur_altsetting;
-
-	if (alt->desc.bNumEndpoints < 1)
-		return -ENODEV;
-
 	pcu->ep_ctrl = &alt->endpoint[0].desc;
 	pcu->max_ctrl_size = usb_endpoint_maxp(pcu->ep_ctrl);
 

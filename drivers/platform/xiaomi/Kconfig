@@ -6,6 +6,8 @@ config MACH_XIAOMI
 	help
 	  Support for Xiaomi products
 
+menu "Xiaomi board selection"
+
 config MACH_XIAOMI_MSM8953
 	bool "Xiaomi MSM8953"
 	depends on ARCH_MSM8953
@@ -18,3 +20,5 @@ config MACH_XIAOMI_VINCE
 	select MACH_XIAOMI_MSM8953
 	help
 	  Support for Xiaomi Redmi 5 Plus (vince)
+
+endmenu

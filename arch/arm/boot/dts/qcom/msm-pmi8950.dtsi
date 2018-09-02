@@ -203,6 +203,7 @@
 			compatible = "qcom,qpnp-smbcharger";
 			#address-cells = <1>;
 			#size-cells = <1>;
+
 			qcom,iterm-ma = <200>;
 			qcom,float-voltage-mv = <4400>;
 			qcom,resume-delta-mv = <50>;
@@ -329,6 +330,7 @@
 			qcom,hold-soc-while-full;
 			qcom,capacity-learning-on;
 			qcom,fg-cc-cv-threshold-mv =<4390>;
+			qcom,fg-cc-cv-threshold-mv-global =<4370>;
 			qcom,vbat-estimate-diff-mv = <200>;
 			qcom,fg-soc@4000 {
 			status = "okay";
@@ -638,7 +640,6 @@
 			qcom,wave-samples = [3e 3e 3e 3e 3e 3e 3e 3e];
 			qcom,wave-rep-cnt = <1>;
 			qcom,wave-samp-rep-cnt = <1>;
-			qcom,pmic-revid = <0x123>;
 		};
 	};
 };

@@ -15,8 +15,8 @@
 #include <linux/platform_device.h>
 #endif
 
-#define gf_dbg(fmt, args...) do { \
-					pr_warn("gf:" fmt, ##args);\
+#define gf_dbg (fmt, args...) do { \
+			pr_warn ("gf:" fmt, ##args);\
 		} while (0)
 
 
@@ -176,6 +176,11 @@ static int hw_reset (struct  gf_dev *gf_dev)
 {
 	int irq_gpio;
 	struct device *dev = &gf_dev->spi->dev;
+
+
+
+
+
 
 	int rc = select_pin_ctl (gf_dev, "goodixfp_reset_reset");
 	if (rc)
