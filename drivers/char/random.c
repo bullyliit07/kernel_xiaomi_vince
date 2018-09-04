@@ -883,7 +883,6 @@ static void add_interrupt_bench(cycles_t start)
 static __u32 get_reg(struct fast_pool *f, struct pt_regs *regs)
 {
 	__u32 *ptr = (__u32 *) regs;
-<<<<<<< HEAD
 	unsigned int idx;
 
 	if (regs == NULL)
