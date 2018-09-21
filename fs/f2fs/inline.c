@@ -99,7 +99,7 @@ int f2fs_read_inline_data(struct inode *inode, struct page *page)
 						path, current->comm);
 	}
 
-	ipage = get_node_page(F2FS_I_SB(inode), inode->i_ino);
+	ipage = f2fs_get_node_page(F2FS_I_SB(inode), inode->i_ino);
 	if (IS_ERR(ipage)) {
 		trace_android_fs_dataread_end(inode, page_offset(page),
 					      PAGE_SIZE);
@@ -158,6 +158,7 @@ int f2fs_convert_inline_page(struct dnode_of_data *dn, struct page *page)
 
 	/* write data page to try to make data consistent */
 	set_page_writeback(page);
+	ClearPageError(page);
 	fio.old_blkaddr = dn->data_blkaddr;
 	set_inode_flag(dn->inode, FI_HOT_DATA);
 	f2fs_outplace_write_data(dn, &fio);

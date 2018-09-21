@@ -24,47 +24,9 @@ extern struct reciprocal_value schedtune_spc_rdiv;
 struct target_nrg schedtune_target_nrg;
 
 #ifdef CONFIG_DYNAMIC_STUNE_BOOST
-static struct schedtune *getSchedtune(char *st_name)
-{
-	int idx;
- 	for (idx = 1; idx < BOOSTGROUPS_COUNT; ++idx) {
-		char name_buf[NAME_MAX + 1];
-		struct schedtune *st = allocated_group[idx];
- 		if (!st) {
-			pr_warn("SCHEDTUNE: Could not find %s\n", st_name);
-			break;
-		}
- 		cgroup_name(st->css.cgroup, name_buf, sizeof(name_buf));
-		if (strncmp(name_buf, st_name, strlen(st_name)) == 0)
-			return st;
-	}
- 	return NULL;
-}
-
-int do_stune_boost(char *st_name, int boost)
-{
-	int ret = 0;
-	struct schedtune *st = getSchedtune(st_name);
- 	if (!st)
-		return -EINVAL;
- 	mutex_lock(&stune_boost_mutex);
- 	/* Boost if new value is greater than current */
-	if (boost > st->boost)
-		ret = dynamic_boost_write(st, boost);
- 	mutex_unlock(&stune_boost_mutex);
- 	return ret;
-}
- int reset_stune_boost(char *st_name)
-{
-	int ret = 0;
-	struct schedtune *st = getSchedtune(st_name);
- 	if (!st)
-		return -EINVAL;
- 	mutex_lock(&stune_boost_mutex);
-	ret = dynamic_boost_write(st, st->boost_default);
-	mutex_unlock(&stune_boost_mutex);
- 	return ret;
-}
+static DEFINE_MUTEX(stune_boost_mutex);
+static struct schedtune *getSchedtune(char *st_name);
+static int dynamic_boost_write(struct schedtune *st, int boost);
 #endif /* CONFIG_DYNAMIC_STUNE_BOOST */
 
 /* Performance Boost region (B) threshold params */
@@ -812,26 +774,6 @@ boost_write(struct cgroup_subsys_state *css, struct cftype *cft,
 	return 0;
 }
 
-#ifdef CONFIG_DYNAMIC_STUNE_BOOST
-static s64
-dynamic_boost_read(struct cgroup_subsys_state *css, struct cftype *cft)
-{
-	struct schedtune *st = css_st(css);
-
-	return st->dynamic_boost;
-}
-
-static int
-dynamic_boost_write(struct cgroup_subsys_state *css, struct cftype *cft,
-	    s64 dynamic_boost)
-{
-	struct schedtune *st = css_st(css);
-	st->dynamic_boost = dynamic_boost;
-
-	return 0;
-}
-#endif // CONFIG_DYNAMIC_STUNE_BOOST
-
 static struct cftype files[] = {
 	{
 		.name = "boost",
@@ -843,13 +785,6 @@ static struct cftype files[] = {
 		.read_u64 = prefer_idle_read,
 		.write_u64 = prefer_idle_write,
 	},
-#ifdef CONFIG_DYNAMIC_STUNE_BOOST
-	{
-		.name = "dynamic_boost",
-		.read_s64 = dynamic_boost_read,
-		.write_s64 = dynamic_boost_write,
-	},
-#endif // CONFIG_DYNAMIC_STUNE_BOOST
 	{ }	/* terminate */
 };
 

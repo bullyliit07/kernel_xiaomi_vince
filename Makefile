@@ -306,7 +306,7 @@ HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O3 -fomit-frame-p
 HOSTCXXFLAGS = -O3
 
 ifeq ($(shell $(HOSTCC) -v 2>&1 | grep -c "clang version"), 1)
-HOSTCFLAGS  += -Wno-unused-value -Wno-unused-parameter -Wno-incompatible-pointer-types -Wno-duplicate-decl-specifier -Wno-memset-transposed-args -Wno-misleading-indentation -Wno-shift-overflow -Wno-switch-unreachable -Wno-unused-variable \
+HOSTCFLAGS  += -Wno-unused-value -Wno-unused-parameter -Wno-incompatible-pointer-types -Wno-duplicate-decl-specifier -Wno-memset-transposed-args -Wno-misleading-indentation -Wno-shift-overflow -Wno-switch-unreachable -Wno-unused-variable -Wno-unused-label \
 		-Wno-missing-field-initializers -fno-delete-null-pointer-checks
 endif
 
@@ -399,7 +399,8 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common -fshort-wchar \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
-                   -Wno-unused-variable
+                   -Wno-unused-variable \
+                   -Wno-unused-label
 		   -std=gnu89 $(call cc-option,-fno-PIE)
 
 KBUILD_AFLAGS_KERNEL :=

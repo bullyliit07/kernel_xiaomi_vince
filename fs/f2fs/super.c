@@ -1033,7 +1033,6 @@ static void f2fs_put_super(struct super_block *sb)
 
 	/* f2fs_write_checkpoint can update stat informaion */
 	f2fs_destroy_stats(sbi);
-	f2fs_sbi_list_del(sbi);
 
 	/*
 	 * normally superblock is clean, so we need to release this.
@@ -1375,6 +1374,7 @@ static void default_options(struct f2fs_sb_info *sbi)
 	F2FS_OPTION(sbi).test_dummy_encryption = false;
 	sbi->readdir_ra = 1;
 
+	set_opt(sbi, BG_GC);
 	set_opt(sbi, INLINE_XATTR);
 	set_opt(sbi, INLINE_DATA);
 	set_opt(sbi, INLINE_DENTRY);
@@ -1986,19 +1986,13 @@ static bool f2fs_dummy_context(struct inode *inode)
 	return DUMMY_ENCRYPTION_ENABLED(F2FS_I_SB(inode));
 }
 
-static unsigned f2fs_max_namelen(struct inode *inode)
-{
-	return S_ISLNK(inode->i_mode) ?
-			inode->i_sb->s_blocksize : F2FS_NAME_LEN;
-}
-
 static const struct fscrypt_operations f2fs_cryptops = {
 	.key_prefix	= "f2fs:",
 	.get_context	= f2fs_get_context,
 	.set_context	= f2fs_set_context,
 	.dummy_context	= f2fs_dummy_context,
 	.empty_dir	= f2fs_empty_dir,
-	.max_namelen	= f2fs_max_namelen,
+	.max_namelen	= F2FS_NAME_LEN,
 };
 #endif
 
@@ -2978,8 +2972,6 @@ try_onemore:
 	if (err)
 		goto free_node_inode;
 
-	f2fs_sbi_list_add(sbi);
-
 	/* read root inode and dentry */
 	root = f2fs_iget(sb, F2FS_ROOT_INO(sbi));
 	if (IS_ERR(root)) {
@@ -3112,13 +3104,11 @@ free_root_inode:
 	dput(sb->s_root);
 	sb->s_root = NULL;
 free_stats:
-	f2fs_sbi_list_del(sbi);
 	f2fs_destroy_stats(sbi);
 free_node_inode:
 	f2fs_release_ino_entry(sbi, true);
 	truncate_inode_pages_final(NODE_MAPPING(sbi));
 	iput(sbi->node_inode);
-	f2fs_sbi_list_del(sbi);
 free_nm:
 	f2fs_destroy_node_manager(sbi);
 free_sm:
