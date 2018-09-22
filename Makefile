@@ -306,7 +306,7 @@ HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O3 -fomit-frame-p
 HOSTCXXFLAGS = -O3
 
 ifeq ($(shell $(HOSTCC) -v 2>&1 | grep -c "clang version"), 1)
-HOSTCFLAGS  += -Wno-unused-value -Wno-unused-parameter -Wno-incompatible-pointer-types -Wno-duplicate-decl-specifier -Wno-memset-transposed-args -Wno-misleading-indentation -Wno-shift-overflow -Wno-switch-unreachable -Wno-unused-variable -Wno-unused-label \
+HOSTCFLAGS  += -Wno-unused-value -Wno-unused-parameter -Wno-incompatible-pointer-types -Wno-duplicate-decl-specifier -Wno-memset-transposed-args -Wno-misleading-indentation -Wno-shift-overflow -Wno-switch-unreachable -Wno-unused-variable -Wno-unused-label -Wno-return-type\
 		-Wno-missing-field-initializers -fno-delete-null-pointer-checks
 endif
 
@@ -400,7 +400,8 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
                    -Wno-unused-variable \
-                   -Wno-unused-label
+                   -Wno-unused-label \
+                   -Wno-return-type
 		   -std=gnu89 $(call cc-option,-fno-PIE)
 
 KBUILD_AFLAGS_KERNEL :=
@@ -657,7 +658,7 @@ KBUILD_AFLAGS	+= $(call cc-option,-fno-PIE)
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS	+= $(call cc-option,-Oz,-Os) $(call cc-disable-warning,maybe-uninitialized,)
 else
-KBUILD_CFLAGS	+= -O2 -finline-functions -Wno-maybe-uninitialized -Wno-nonnull -Wno-incompatible-pointer-types -Wno-duplicate-decl-specifier -Wno-memset-transposed-args -Wno-misleading-indentation -Wno-shift-overflow -Wno-switch-unreachable -Wno-unused-variable
+KBUILD_CFLAGS	+= -O2 -finline-functions -Wno-maybe-uninitialized -Wno-nonnull -Wno-incompatible-pointer-types -Wno-duplicate-decl-specifier -Wno-memset-transposed-args -Wno-misleading-indentation -Wno-shift-overflow -Wno-switch-unreachable -Wno-unused-variable -Wno-return-type
 ifeq ($(cc-name),clang)
 KBUILD_CFLAGS	+= $(call cc-option, -O3,)
 LDFLAGS			+= $(call ld-option, -O3)
