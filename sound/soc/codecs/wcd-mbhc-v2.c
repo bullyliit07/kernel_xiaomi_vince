@@ -67,6 +67,16 @@ uint32_t g_ZL = 0;
 uint32_t g_ZR = 0;
 /* ASUS_BSP Eric ---*/
 
+/* ASUS_BSP Paul +++ */
+int g_jack_det_invert = 0;
+extern int g_DebugMode;
+/* ASUS_BSP Paul --- */
+
+/* ASUS_BSP Eric +++*/
+uint32_t g_ZL = 0;
+uint32_t g_ZR = 0;
+/* ASUS_BSP Eric ---*/
+
 static int det_extn_cable_en;
 module_param (det_extn_cable_en, int,
 		S_IRUGO | S_IWUSR | S_IWGRP);
@@ -757,7 +767,7 @@ static void wcd_mbhc_report_plug (struct wcd_mbhc *mbhc, int insertion,
 static bool wcd_mbhc_detect_anc_plug_type (struct wcd_mbhc *mbhc)
 {
 	bool anc_mic_found = false;
-	u16 val, hs_comp_res, btn_status = 0;
+	u16 val = 0, hs_comp_res = 0, btn_status = 0;
 	unsigned long retry = 0;
 	int valid_plug_cnt = 0, invalid_plug_cnt = 0;
 	int btn_status_cnt = 0;
@@ -771,7 +781,7 @@ static bool wcd_mbhc_detect_anc_plug_type (struct wcd_mbhc *mbhc)
 	if (!mbhc->mbhc_cb->mbhc_micbias_control)
 		return false;
 
-	WCD_MBHC_REG_READ (WCD_MBHC_FSM_EN, val);
+	WCD_MBHC_REG_READ(WCD_MBHC_FSM_EN, val);
 
 	if (val)
 		WCD_MBHC_REG_UPDATE_BITS (WCD_MBHC_FSM_EN, 0);
@@ -803,7 +813,8 @@ static bool wcd_mbhc_detect_anc_plug_type (struct wcd_mbhc *mbhc)
 		pr_debug ("%s: Retry attempt %lu\n", __func__, retry + 1);
 		WCD_MBHC_REG_READ (WCD_MBHC_HS_COMP_RESULT, hs_comp_res);
 
-		if (!hs_comp_res) {
+		if (!hs_comp_res &&
+			mbhc->wcd_mbhc_regs[WCD_MBHC_HS_COMP_RESULT].reg) {
 			valid_plug_cnt++;
 			is_check_btn_press = true;
 		} else
@@ -1171,7 +1182,20 @@ exit:
 	return spl_hs;
 }
 
-static void wcd_correct_swch_plug (struct work_struct *work)
+static void wcd_headset_btn_delay(struct work_struct *work)
+{
+	struct wcd_mbhc *mbhc =
+		container_of(work, typeof(*mbhc), mbhc_btn_delay_dwork.work);
+	/*
+	 * Allow delay between detection completion and the time when
+	 * headset button presses are allowed to be processed. This
+	 * is done in order to prevent spurious button interrupts
+	 * right after plug detection is finished.
+	 */
+	mbhc->ignore_btn_intr = false;
+}
+
+static void wcd_correct_swch_plug(struct work_struct *work)
 {
 	struct wcd_mbhc *mbhc;
 	struct snd_soc_codec *codec;
@@ -1188,11 +1212,16 @@ static void wcd_correct_swch_plug (struct work_struct *work)
 	int rc, spl_hs_count = 0;
 	int cross_conn;
 	int try = 0;
+	int retry = 0;
+	int headset_cnt = 0;
 
 	pr_debug ("%s: enter\n", __func__);
 
 	mbhc = container_of (work, struct wcd_mbhc, correct_plug_swch);
 	codec = mbhc->codec;
+
+	cancel_delayed_work_sync(&mbhc->mbhc_btn_delay_dwork);
+	mbhc->ignore_btn_intr = true;
 
 	/*
 	 * Enable micbias/pullup for detection in correct work.
@@ -1325,6 +1354,17 @@ correct_plug_type:
 			}
 		}
 
+		/*
+		 * It's pretty certain to be a headset after being detected
+		 * as such 10 times, so exit early to reduce detection
+		 * latency.
+		 */
+		if (plug_type == MBHC_PLUG_TYPE_HEADSET) {
+			if (++headset_cnt == 10) {
+				wrk_complete = false;
+				break;
+			}
+		}
 		if ((!hs_comp_res) && (!is_pa_on)) {
 			/* Check for cross connection*/
 			ret = wcd_check_cross_conn (mbhc);
@@ -1348,7 +1388,8 @@ correct_plug_type:
 					*when switch didnt work report headset to suit some device HPHL/R havent any load but  its button need used
 					*/
 					plug_type = MBHC_PLUG_TYPE_GND_MIC_SWAP;
-					goto report;
+					/* Retry instead in case of a noisy detection */
+					continue;
 				} else {
 					plug_type = MBHC_PLUG_TYPE_GND_MIC_SWAP;
 				}
@@ -1545,6 +1586,11 @@ static void wcd_mbhc_swch_irq_handler (struct wcd_mbhc *mbhc)
 	pr_debug ("%s: mbhc->current_plug: %d detection_type: %d\n", __func__,
 			mbhc->current_plug, detection_type);
 	wcd_cancel_hs_detect_plug (mbhc, &mbhc->correct_plug_swch);
+
+	/* ASUS_BSP Paul +++ */
+	if (g_DebugMode)
+		goto exit;
+	/* ASUS_BSP Paul --- */
 
 	/* ASUS_BSP Paul +++ */
 	if (g_DebugMode)
@@ -2045,6 +2091,9 @@ static irqreturn_t wcd_mbhc_btn_press_handler (int irq, void *data)
 				__func__);
 		goto done;
 	}
+	/* Don't process button interrupts immediately after plug detection */
+	if (mbhc->ignore_btn_intr)
+		goto done;
 	mbhc->buttons_pressed |= mask;
 	mbhc->mbhc_cb->lock_sleep (mbhc, true);
 	if (schedule_delayed_work (&mbhc->mbhc_btn_dwork,
@@ -2095,6 +2144,12 @@ static irqreturn_t wcd_mbhc_release_handler (int irq, void *data)
 
 		goto exit;
 
+	}
+	/* Don't process button interrupts immediately after plug detection */
+	if (mbhc->ignore_btn_intr) {
+		wcd_cancel_btn_work(mbhc);
+		mbhc->buttons_pressed &= ~WCD_MBHC_JACK_BUTTON_MASK;
+		goto exit;
 	}
 	if (mbhc->buttons_pressed & WCD_MBHC_JACK_BUTTON_MASK) {
 		ret = wcd_cancel_btn_work (mbhc);
