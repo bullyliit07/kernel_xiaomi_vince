@@ -623,7 +623,6 @@ static void snd_usb_audio_disconnect(struct usb_device *dev,
 				     struct snd_usb_audio *chip)
 {
 	struct snd_card *card;
-	struct usb_mixer_interface *mixer;
 	struct list_head *p;
 	bool was_shutdown;
 
