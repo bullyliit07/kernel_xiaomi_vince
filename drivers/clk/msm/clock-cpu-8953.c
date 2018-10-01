@@ -127,7 +127,7 @@ static struct pll_clk apcs_hf_pll = {
 	},
 	.base = &virt_bases[APCS_C0_PLL_BASE],
 	.max_rate = 2208000000UL,
-	.min_rate = 652800000UL,
+	.min_rate = 400457000UL,
 	.src_rate =  19200000UL,
 	.c = {
 		.parent = &xo_a_clk.c,
@@ -667,10 +667,6 @@ static void get_speed_bin(struct platform_device *pdev, int *bin,
 	pte_efuse = readl_relaxed(base);
 	devm_iounmap(&pdev->dev, base);
 
-	*bin = (pte_efuse >> 8) & 0x7;
-
-	dev_info(&pdev->dev, "Speed bin: %d PVS Version: %d\n", *bin,
-								*version);
 }
 
 static int cpu_parse_devicetree(struct platform_device *pdev)

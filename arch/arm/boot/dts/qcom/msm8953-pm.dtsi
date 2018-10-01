@@ -41,8 +41,9 @@
 		#size-cells = <0>;
 		clock-names = "l2_clk", "cpu0_clk", "cpu1_clk",
 				"cpu2_clk", "cpu3_clk", "cpu4_clk",
-				"cpu5_clk", "cpu6_clk", "cpu7_clk";
+				"cpu5_clk", "cpu6_clk", "cpu7_clk", "cpu8_clk";
 		clocks = <&clock_cpu clk_cci_clk>,
+			 <&clock_cpu clk_a53_pwr_clk>,
 			 <&clock_cpu clk_a53_pwr_clk>,
 			 <&clock_cpu clk_a53_pwr_clk>,
 			 <&clock_cpu clk_a53_pwr_clk>,
@@ -59,6 +60,7 @@
 			label = "system";
 			qcom,spm-device-names = "cci";
 			qcom,default-level=<0>;
+			qcom,use-prediction;
 			qcom,psci-mode-shift = <8>;
 			qcom,psci-mode-mask = <0xf>;
 
@@ -104,6 +106,7 @@
 				label = "pwr";
 				qcom,spm-device-names = "l2";
 				qcom,default-level=<0>;
+				qcom,use-prediction;
 				qcom,cpu = <&CPU0 &CPU1 &CPU2 &CPU3>;
 				qcom,psci-mode-shift = <4>;
 				qcom,psci-mode-mask = <0xf>;
